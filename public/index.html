@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Site officiel — établissement scolaire d'excellence">
+  <title id="pageTitle">Accueil — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="home"></header>
+
+  <main id="main-content">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="heroBanner" style="background: linear-gradient(135deg, #1e3a5f 0%, #1a56db 100%);">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 id="heroSlogan">Excellence et Épanouissement</h1>
+        <p id="heroSubtitle">Une éducation de qualité au service de la réussite de chaque élève</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <a href="/about.html" class="btn btn-white">Nous découvrir →</a>
+          <a href="/contact.html" class="btn btn-outline">Contactez-nous</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PRÉSENTATION RAPIDE ===== -->
+    <section class="section" id="featuresSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>Pourquoi nous choisir ?</h2>
+          <p>Découvrez ce qui fait de notre établissement un lieu unique d'apprentissage</p>
+        </div>
+        <div class="grid-3" id="featuresGrid">
+          <div class="card feature-card">
+            <span class="icon">📚</span>
+            <h3>Excellence Académique</h3>
+            <p>Un programme rigoureux qui prépare nos élèves aux meilleures universités</p>
+          </div>
+          <div class="card feature-card">
+            <span class="icon">👩‍🏫</span>
+            <h3>Équipe Dévouée</h3>
+            <p>Des enseignants passionnés et qualifiés, engagés pour la réussite de chacun</p>
+          </div>
+          <div class="card feature-card">
+            <span class="icon">🏟️</span>
+            <h3>Infrastructures Modernes</h3>
+            <p>Des salles équipées, laboratoires, bibliothèque et espaces sportifs</p>
+          </div>
+          <div class="card feature-card">
+            <span class="icon">🌍</span>
+            <h3>Ouverture Internationale</h3>
+            <p>Programmes linguistiques et échanges culturels pour une vision globale</p>
+          </div>
+          <div class="card feature-card">
+            <span class="icon">🎨</span>
+            <h3>Activités Diversifiées</h3>
+            <p>Sport, arts, musique, théâtre — chaque talent trouve sa place</p>
+          </div>
+          <div class="card feature-card">
+            <span class="icon">🛡️</span>
+            <h3>Cadre Bienveillant</h3>
+            <p>Un environnement sécurisé qui favorise l'épanouissement personnel</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CHIFFRES CLÉS ===== -->
+    <section class="section section-alt" id="statsSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>En chiffres</h2>
+          <p>Quelques indicateurs qui témoignent de notre engagement</p>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading">Chargement...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ACTUALITÉS RÉCENTES ===== -->
+    <section class="section" id="newsSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>Actualités récentes</h2>
+          <p>Les dernières nouvelles de notre établissement</p>
+        </div>
+        <div class="grid-3" id="newsGrid">
+          <div class="loading">Chargement des actualités...</div>
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="/news.html" class="btn btn-primary">Voir toutes les actualités →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TÉMOIGNAGES ===== -->
+    <section class="section section-alt" id="testimonialsSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>Témoignages</h2>
+          <p>Ce que disent les parents et les anciens élèves</p>
+        </div>
+        <div class="grid-3" id="testimonialsGrid">
+          <div class="loading">Chargement des témoignages...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA FINAL ===== -->
+    <section class="section" style="text-align:center;background:var(--primary);color:var(--white);">
+      <div class="container">
+        <h2 style="font-size:2rem;font-weight:700;margin-bottom:1rem;">Prêt à nous rejoindre ?</h2>
+        <p style="font-size:1.1rem;opacity:0.9;margin-bottom:2rem;">Inscrivez votre enfant pour la prochaine rentrée scolaire</p>
+        <a href="/contact.html" class="btn btn-white" style="font-size:1.1rem;padding:1rem 2.5rem;">Contactez-nous dès maintenant</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // ============================================
+    // PAGE ACCUEIL — Chargement dynamique
+    // ============================================
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function getImageUrl(path) {
+      if (!path) return '';
+      return path.startsWith('/') ? path : '/' + path;
+    }
+
+    async function loadHomePage() {
+      try {
+        // Charger settings, news et testimonials en parallèle
+        const [settingsRes, newsRes, testimonialsRes] = await Promise.all([
+          fetch('/api/settings/public'),
+          fetch('/api/news/public/recent?limit=4'),
+          fetch('/api/testimonials/public')
+        ]);
+
+        const settings = (await settingsRes.json()).data;
+        const newsData = await newsRes.json();
+        const testimonialsData = await testimonialsRes.json();
+
+        // Mise à jour du titre
+        const schoolName = settings.school_name || 'Mon École';
+        document.getElementById('pageTitle').textContent = `Accueil — ${schoolName}`;
+        document.querySelector('meta[name="description"]').content = settings.meta_description || `Site officiel de ${schoolName}`;
+
+        // Hero
+        const heroEl = document.getElementById('heroBanner');
+        if (settings.banner_path) {
+          heroEl.style.background = `url(${getImageUrl(settings.banner_path)}) center/cover no-repeat`;
+        }
+        document.getElementById('heroSlogan').textContent = settings.school_slogan || 'Excellence et Épanouissement';
+        document.getElementById('heroSubtitle').textContent = settings.meta_description || `Bienvenue à ${schoolName}`;
+
+        // Stats dynamiques
+        const statsList = [
+          { value: settings.stat_years || '30+', label: `Années d'expérience` },
+          { value: settings.stat_students || '1500+', label: 'Élèves formés' },
+          { value: settings.stat_success || '95%', label: 'Taux de réussite' },
+          { value: settings.stat_teachers || '50+', label: 'Enseignants qualifiés' },
+        ];
+        document.getElementById('statsGrid').innerHTML = statsList.map(s =>
+          '<div class="stat-card card"><div class="stat-number">' + s.value + '</div><div class="stat-label">' + s.label + '</div></div>'
+        ).join('');
+
+        // News récentes
+        const newsGrid = document.getElementById('newsGrid');
+        if (newsData.success && newsData.data.length > 0) {
+          newsGrid.innerHTML = newsData.data.map(article => `
+            <a href="/news.html?slug=${encodeURIComponent(article.slug)}" class="card" style="text-decoration:none;color:inherit;">
+              ${article.image_path ? `<img src="${getImageUrl(article.image_path)}" class="card-img" alt="${article.title}" loading="lazy">` : ''}
+              <div class="card-date">${formatDate(article.publish_date)}</div>
+              <h3>${article.title}</h3>
+              <p>${article.summary || article.content.substring(0, 120) + '...'}</p>
+            </a>
+          `).join('');
+        } else {
+          newsGrid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <p>Aucune actualité pour le moment.</p>
+            </div>`;
+        }
+
+        // Témoignages
+        const testimonialsGrid = document.getElementById('testimonialsGrid');
+        if (testimonialsData.success && testimonialsData.data.length > 0) {
+          testimonialsGrid.innerHTML = testimonialsData.data.map(t => `
+            <div class="card testimonial-card">
+              ${t.image_path ? `<img src="${getImageUrl(t.image_path)}" style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem;" alt="${t.name}" loading="lazy">` : ''}
+              <p class="quote">« ${t.content} »</p>
+              <div class="author">${t.name}</div>
+              ${t.role ? `<div style="color:var(--text-light);font-size:0.85rem;">${t.role}</div>` : ''}
+            </div>
+          `).join('');
+        } else {
+          testimonialsGrid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <p>Aucun témoignage pour le moment.</p>
+            </div>`;
+        }
+
+      } catch (err) {
+        console.error('Erreur chargement page accueil:', err);
+        document.getElementById('newsGrid').innerHTML = '<div class="error-state">Erreur de chargement. Veuillez réessayer.</div>';
+        document.getElementById('testimonialsGrid').innerHTML = '<div class="error-state">Erreur de chargement.</div>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadHomePage);
+  </script>
+</body>
+</html>

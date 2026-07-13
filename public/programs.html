@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Découvrez nos programmes et cycles de formation">
+  <title>Formations — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="programs"></header>
+
+  <main id="main-content">
+
+    <div class="breadcrumb">
+      <div class="breadcrumb-inner"><a href="/">Accueil</a> › Formations</div>
+    </div>
+
+    <!-- ===== INTRO ===== -->
+    <section class="section" style="background:linear-gradient(135deg,#f0f5ff,#fff);">
+      <div class="section-header">
+        <h2>Nos Formations</h2>
+        <p id="programsIntro">Découvrez nos différents cycles de formation, de la maternelle au lycée.</p>
+      </div>
+    </section>
+
+    <!-- ===== CYCLES/NIVEAUX ===== -->
+    <section class="section">
+      <div class="container">
+        <div class="grid-2" id="programsGrid">
+          <div class="loading" style="grid-column:1/-1;">Chargement des programmes...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MÉTHODOLOGIE ===== -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <h2>Notre Méthodologie Pédagogique</h2>
+          <p>Une approche innovante centrée sur l'élève</p>
+        </div>
+        <div class="grid-3">
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">🧠</span>
+            <h4 style="margin:0.75rem 0;">Apprentissage Actif</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Les élèves construisent leurs connaissances par l'expérimentation et la résolution de problèmes</p>
+          </div>
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">💻</span>
+            <h4 style="margin:0.75rem 0;">Outils Numériques</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Tableaux interactifs, tablettes et plateformes d'apprentissage en ligne</p>
+          </div>
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">👥</span>
+            <h4 style="margin:0.75rem 0;">Suivi Individualisé</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Chaque élève bénéficie d'un accompagnement adapté à son rythme et ses besoins</p>
+          </div>
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">🔬</span>
+            <h4 style="margin:0.75rem 0;">Approche par Projets</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Des projets interdisciplinaires qui développent la créativité et la collaboration</p>
+          </div>
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">🌍</span>
+            <h4 style="margin:0.75rem 0;">Programme Bilingue</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Français et anglais dès le plus jeune âge pour une ouverture internationale</p>
+          </div>
+          <div class="card" style="text-align:center;padding:2rem;">
+            <span style="font-size:2.5rem;">📊</span>
+            <h4 style="margin:0.75rem 0;">Évaluation Continue</h4>
+            <p style="font-size:0.9rem;color:var(--text-light);">Un suivi régulier des progrès avec des bulletins détaillés chaque trimestre</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ACTIVITÉS EXTRASCOLAIRES ===== -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Activités Extrascolaires</h2>
+          <p>Parce que l'éducation dépasse les murs de la classe</p>
+        </div>
+        <div class="grid-4">
+          <div class="card" style="text-align:center;padding:1.5rem;">
+            <span style="font-size:2rem;">⚽</span>
+            <h4 style="margin:0.5rem 0;">Sports</h4>
+            <p style="font-size:0.85rem;color:var(--text-light);">Football, basketball, natation, athlétisme</p>
+          </div>
+          <div class="card" style="text-align:center;padding:1.5rem;">
+            <span style="font-size:2rem;">🎵</span>
+            <h4 style="margin:0.5rem 0;">Musique</h4>
+            <p style="font-size:0.85rem;color:var(--text-light);">Chorale, piano, guitare, percussions</p>
+          </div>
+          <div class="card" style="text-align:center;padding:1.5rem;">
+            <span style="font-size:2rem;">🎨</span>
+            <h4 style="margin:0.5rem 0;">Arts</h4>
+            <p style="font-size:0.85rem;color:var(--text-light);">Dessin, peinture, sculpture, théâtre</p>
+          </div>
+          <div class="card" style="text-align:center;padding:1.5rem;">
+            <span style="font-size:2rem;">🤖</span>
+            <h4 style="margin:0.5rem 0;">Robotique</h4>
+            <p style="font-size:0.85rem;color:var(--text-light);">Programmation, électronique, compétitions</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    async function loadProgramsPage() {
+      try {
+        const [settingsRes, programsRes] = await Promise.all([
+          fetch('/api/settings/public'),
+          fetch('/api/programs/public')
+        ]);
+
+        const settings = (await settingsRes.json()).data;
+        const programsData = await programsRes.json();
+
+        // Titre
+        document.title = `Formations — ${settings.school_name || 'Mon École'}`;
+        document.getElementById('programsIntro').textContent =
+          settings.programs_intro || 'Découvrez nos différents cycles de formation.';
+
+        // Programmes
+        const grid = document.getElementById('programsGrid');
+        if (programsData.success && programsData.data.length > 0) {
+          grid.innerHTML = programsData.data.map(p => {
+            let details = '';
+            try {
+              const d = typeof p.details === 'string' ? JSON.parse(p.details) : p.details;
+              if (d && d.age) details += `<span style="color:var(--primary);font-weight:600;">🎂 ${d.age}</span><br>`;
+              if (d && d.duration) details += `<span>⏱️ ${d.duration}</span><br>`;
+              if (d && d.sections && d.sections.length) {
+                details += `<span>📋 ${d.sections.join(' · ')}</span>`;
+              }
+            } catch(e) { /* ignore */ }
+
+            return `
+              <div class="card program-card">
+                <span class="icon">${p.icon || getProgramIcon(p.slug)}</span>
+                <h3>${p.name}</h3>
+                <p style="font-size:0.95rem;color:var(--text-light);line-height:1.7;">${p.description || ''}</p>
+                ${details ? `<div style="margin-top:1rem;font-size:0.85rem;color:var(--text-light);line-height:1.6;">${details}</div>` : ''}
+              </div>`;
+          }).join('');
+        } else {
+          grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Aucun programme pour le moment.</div>';
+        }
+
+      } catch (err) {
+        console.error('Erreur chargement programmes:', err);
+        document.getElementById('programsGrid').innerHTML = '<div class="error-state">Erreur de chargement.</div>';
+      }
+    }
+
+    function getProgramIcon(slug) {
+      const icons = { maternelle: '🧸', primaire: '📖', college: '🎓', lycee: '🏛️', lycée: '🏛️' };
+      return icons[slug] || '📚';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProgramsPage);
+  </script>
+</body>
+</html>

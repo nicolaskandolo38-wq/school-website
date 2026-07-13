@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Actualités et événements de notre établissement">
+  <title>Actualités — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+
+  <style>
+    .pagination {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .pagination button {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .pagination button:hover:not(:disabled) { background: var(--primary); color: var(--white); }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .pagination button.active { background: var(--primary); color: var(--white); font-weight: 600; }
+
+    .event-card {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.5rem;
+    }
+    .event-date-badge {
+      flex-shrink: 0;
+      width: 70px;
+      height: 70px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .event-date-badge .day {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .event-date-badge .month {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .event-past {
+      opacity: 0.6;
+    }
+    .event-past .event-date-badge {
+      background: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="news"></header>
+
+  <main id="main-content">
+
+    <div class="breadcrumb">
+      <div class="breadcrumb-inner"><a href="/">Accueil</a> › Actualités & Événements</div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <section class="section" style="padding-bottom:1rem;">
+      <div class="section-header">
+        <h2>Actualités & Événements</h2>
+        <p>Restez informé de tout ce qui se passe dans notre établissement</p>
+      </div>
+    </section>
+
+    <!-- ===== ONGLETS ===== -->
+    <div class="container" style="padding-bottom:2rem;">
+      <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+        <button id="tabArticles" class="btn btn-primary" onclick="switchTab('articles')" style="border-radius:50px;">📝 Articles</button>
+        <button id="tabEvents" class="btn" style="background:var(--white);color:var(--text);border:2px solid var(--border);border-radius:50px;" onclick="switchTab('events')">📅 Événements</button>
+      </div>
+    </div>
+
+    <!-- ===== ARTICLES ===== -->
+    <section id="articlesSection">
+      <div class="container">
+        <div class="grid-3" id="articlesGrid">
+          <div class="loading" style="grid-column:1/-1;">Chargement des articles...</div>
+        </div>
+        <div class="pagination" id="articlesPagination"></div>
+      </div>
+    </section>
+
+    <!-- ===== ÉVÉNEMENTS ===== -->
+    <section id="eventsSection" style="display:none;">
+      <div class="container" style="max-width:800px;">
+        <div id="eventsList">
+          <div class="loading">Chargement des événements...</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let currentTab = 'articles';
+    let currentPage = 1;
+    const PER_PAGE = 6;
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('articlesSection').style.display = tab === 'articles' ? '' : 'none';
+      document.getElementById('eventsSection').style.display = tab === 'events' ? '' : 'none';
+
+      const btnA = document.getElementById('tabArticles');
+      const btnE = document.getElementById('tabEvents');
+
+      if (tab === 'articles') {
+        btnA.className = 'btn btn-primary';
+        btnA.style.borderRadius = '50px';
+        btnE.className = 'btn';
+        btnE.style = 'background:var(--white);color:var(--text);border:2px solid var(--border);border-radius:50px;';
+      } else {
+        btnE.className = 'btn btn-primary';
+        btnE.style.borderRadius = '50px';
+        btnA.className = 'btn';
+        btnA.style = 'background:var(--white);color:var(--text);border:2px solid var(--border);border-radius:50px;';
+        loadEvents();
+      }
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function getDay(dateStr) {
+      return new Date(dateStr).getDate();
+    }
+
+    function getMonth(dateStr) {
+      const months = ['JAN','FÉV','MAR','AVR','MAI','JUN','JUL','AOÛ','SEP','OCT','NOV','DÉC'];
+      return months[new Date(dateStr).getMonth()];
+    }
+
+    function getImageUrl(path) {
+      if (!path) return '';
+      return path.startsWith('/') ? path : '/' + path;
+    }
+
+    function isPast(dateStr) {
+      return new Date(dateStr) < new Date();
+    }
+
+    // ========= ARTICLES =========
+    async function loadArticles(page = 1) {
+      currentPage = page;
+      const grid = document.getElementById('articlesGrid');
+      const pag = document.getElementById('articlesPagination');
+      grid.innerHTML = '<div class="loading" style="grid-column:1/-1;">Chargement...</div>';
+
+      try {
+        const offset = (page - 1) * PER_PAGE;
+        const res = await fetch(`/api/news/public?limit=${PER_PAGE}&offset=${offset}`);
+        const data = await res.json();
+
+        if (data.success && data.data.length > 0) {
+          grid.innerHTML = data.data.map(a => `
+            <div class="card" style="cursor:pointer;" onclick="openArticle('${a.slug}')">
+              ${a.image_path ? `<img src="${getImageUrl(a.image_path)}" class="card-img" alt="${a.title}" loading="lazy">` : ''}
+              <div class="card-date">${formatDate(a.publish_date)}</div>
+              <h3>${a.title}</h3>
+              <p>${a.summary || a.content.substring(0, 150) + '...'}</p>
+            </div>
+          `).join('');
+
+          // Pagination
+          const total = data.total || 0;
+          const totalPages = Math.ceil(total / PER_PAGE);
+          if (totalPages > 1) {
+            let html = `<button onclick="loadArticles(${page - 1})" ${page <= 1 ? 'disabled' : ''}>← Précédent</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+              html += `<button onclick="loadArticles(${i})" class="${i === page ? 'active' : ''}">${i}</button>`;
+            }
+            html += `<button onclick="loadArticles(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Suivant →</button>`;
+            pag.innerHTML = html;
+          } else {
+            pag.innerHTML = '';
+          }
+        } else {
+          grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>Aucun article pour le moment.</p></div>';
+          pag.innerHTML = '';
+        }
+      } catch (err) {
+        grid.innerHTML = '<div class="error-state" style="grid-column:1/-1;">Erreur de chargement des articles.</div>';
+      }
+    }
+
+    // ========= ÉVÉNEMENTS =========
+    async function loadEvents() {
+      const list = document.getElementById('eventsList');
+      list.innerHTML = '<div class="loading">Chargement des événements...</div>';
+
+      try {
+        const res = await fetch('/api/events/public?limit=50');
+        const data = await res.json();
+
+        if (data.success && data.data.length > 0) {
+          list.innerHTML = data.data.map(e => `
+            <div class="card event-card ${isPast(e.event_date) ? 'event-past' : ''}">
+              <div class="event-date-badge">
+                <span class="day">${getDay(e.event_date)}</span>
+                <span class="month">${getMonth(e.event_date)}</span>
+              </div>
+              <div style="flex:1;">
+                <h3 style="margin:0 0 0.25rem;">${e.title}</h3>
+                <p style="font-size:0.85rem;color:var(--primary);margin-bottom:0.5rem;">
+                  📅 ${formatDate(e.event_date)}
+                  ${e.event_end_date ? ` — ${formatDate(e.event_end_date)}` : ''}
+                  ${e.location ? ` · 📍 ${e.location}` : ''}
+                </p>
+                <p style="font-size:0.9rem;color:var(--text-light);">${e.description || ''}</p>
+                ${e.image_path ? `<img src="${getImageUrl(e.image_path)}" style="width:100%;max-width:300px;border-radius:8px;margin-top:0.75rem;" alt="${e.title}" loading="lazy">` : ''}
+                ${isPast(e.event_date) ? '<span style="font-size:0.8rem;color:var(--text-light);">(Événement passé)</span>' : ''}
+              </div>
+            </div>
+          `).join('');
+
+          // Séparer passé/futur visuellement
+          const hasUpcoming = data.data.some(e => !isPast(e.event_date));
+          const hasPast = data.data.some(e => isPast(e.event_date));
+          if (hasUpcoming && hasPast) {
+            const items = list.querySelectorAll('.event-card');
+            let pastStarted = false;
+            items.forEach(item => {
+              if (item.classList.contains('event-past') && !pastStarted) {
+                pastStarted = true;
+                const divider = document.createElement('div');
+                divider.style.cssText = 'text-align:center;color:var(--text-light);padding:1.5rem 0;font-size:0.9rem;';
+                divider.textContent = '— Événements passés —';
+                item.parentNode.insertBefore(divider, item);
+              }
+            });
+          }
+        } else {
+          list.innerHTML = '<div class="empty-state"><p>Aucun événement pour le moment.</p></div>';
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="error-state">Erreur de chargement des événements.</div>';
+      }
+    }
+
+    // ========= MODALE ARTICLE =========
+    function openArticle(slug) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+      overlay.innerHTML = '<div class="loading" style="color:white;">Chargement...</div>';
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+
+      fetch(`/api/news/public/${slug}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            const a = d.data;
+            overlay.innerHTML = `
+              <div style="background:var(--white);border-radius:16px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;">
+                ${a.image_path ? `<img src="${getImageUrl(a.image_path)}" style="width:100%;max-height:350px;object-fit:cover;border-radius:16px 16px 0 0;" alt="${a.title}">` : ''}
+                <div style="padding:2rem;">
+                  <button style="float:right;background:none;border:none;font-size:1.5rem;cursor:pointer;" onclick="this.closest('div').parentElement.parentElement.remove()">✕</button>
+                  <div class="card-date">${formatDate(a.publish_date)}</div>
+                  <h2 style="margin:0.5rem 0 1rem;">${a.title}</h2>
+                  <div style="line-height:1.8;color:var(--text);white-space:pre-wrap;">${a.content || a.summary || ''}</div>
+                </div>
+              </div>`;
+          } else {
+            overlay.innerHTML = '<div style="color:white;text-align:center;">Article introuvable.</div>';
+          }
+        })
+        .catch(() => { overlay.innerHTML = '<div style="color:white;text-align:center;">Erreur de chargement.</div>'; });
+    }
+
+    // Vérifier si URL contient un slug pour ouvrir directement
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+      if (slug) openArticle(slug);
+      loadArticles(1);
+    });
+
+    // Exposer switchTab globalement
+    window.switchTab = switchTab;
+    window.loadArticles = loadArticles;
+    window.openArticle = openArticle;
+  </script>
+</body>
+</html>

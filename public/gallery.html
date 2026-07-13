@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Galerie photos et vidéos de notre établissement">
+  <title>Galerie — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+
+  <style>
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .lightbox.open { display: flex; }
+
+    .lightbox-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      color: white;
+      font-size: 2.5rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .lightbox-close:hover { opacity: 1; }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 2.5rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      opacity: 0.8;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.25); opacity: 1; }
+    .lightbox-prev { left: 1rem; }
+    .lightbox-next { right: 1rem; }
+
+    .lightbox-caption {
+      color: #ccc;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    /* Filtres albums */
+    .album-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .album-filter-btn {
+      padding: 0.5rem 1.25rem;
+      border: 2px solid var(--border);
+      border-radius: 50px;
+      background: var(--white);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .album-filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .album-filter-btn.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+    /* Gallery grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .gallery-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 4/3;
+      background: var(--border);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.05); }
+
+    .gallery-item-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 60%, rgba(0,0,0,0.6));
+      display: flex;
+      align-items: flex-end;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+
+    .gallery-item-overlay span {
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="gallery"></header>
+
+  <main id="main-content">
+
+    <div class="breadcrumb">
+      <div class="breadcrumb-inner"><a href="/">Accueil</a> › Galerie</div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <section class="section" style="padding-bottom:2rem;">
+      <div class="section-header">
+        <h2>Galerie Photos & Vidéos</h2>
+        <p>Revivez les moments forts de la vie de notre établissement</p>
+      </div>
+    </section>
+
+    <!-- ===== FILTRES ALBUMS ===== -->
+    <div class="container" style="padding-bottom:1rem;">
+      <div class="album-filter" id="albumFilter">
+        <button class="album-filter-btn active" data-album="all">Tous les albums</button>
+      </div>
+    </div>
+
+    <!-- ===== PHOTOS ===== -->
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="gallery-grid" id="galleryGrid">
+          <div class="loading" style="grid-column:1/-1;">Chargement des photos...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== VIDÉOS ===== -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <h2>Vidéos</h2>
+          <p>Découvrez notre établissement en vidéo</p>
+        </div>
+        <div class="grid-2" id="videosGrid">
+          <div class="loading" style="grid-column:1/-1;">Chargement des vidéos...</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <!-- ===== LIGHTBOX ===== -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fermer">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)" aria-label="Précédent">‹</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+    <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)" aria-label="Suivant">›</button>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let allPhotos = [];
+    let currentAlbum = 'all';
+    let lightboxIndex = -1;
+
+    function getImageUrl(path) {
+      if (!path) return '';
+      return path.startsWith('/') ? path : '/' + path;
+    }
+
+    async function loadGalleryPage() {
+      try {
+        const [settingsRes, galleryRes] = await Promise.all([
+          fetch('/api/settings/public'),
+          fetch('/api/gallery/public')
+        ]);
+
+        const settings = (await settingsRes.json()).data;
+        const galleryData = await galleryRes.json();
+
+        document.title = `Galerie — ${settings.school_name || 'Mon École'}`;
+
+        // Stocker les photos
+        allPhotos = galleryData.success ? galleryData.data : [];
+
+        // Construire les filtres d'albums
+        const albums = galleryData.albums || [];
+        const filterEl = document.getElementById('albumFilter');
+        if (albums.length > 0) {
+          filterEl.innerHTML = `
+            <button class="album-filter-btn active" data-album="all">Tous les albums</button>
+            ${albums.map(a => `
+              <button class="album-filter-btn" data-album="${a.album_name}">${a.album_name} (${a.count})</button>
+            `).join('')}
+          `;
+          // Event listeners
+          document.querySelectorAll('.album-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.album-filter-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              currentAlbum = btn.dataset.album;
+              renderPhotos();
+            });
+          });
+        }
+
+        renderPhotos();
+
+        // Charger aussi les vidéos
+        const settingsRes2 = await fetch('/api/settings/public');
+        const settings2 = (await settingsRes2.json()).data;
+        loadVideos(settings2);
+
+      } catch (err) {
+        console.error('Erreur galerie:', err);
+        document.getElementById('galleryGrid').innerHTML =
+          '<div class="error-state" style="grid-column:1/-1;">Erreur de chargement de la galerie.</div>';
+      }
+    }
+
+    function renderPhotos() {
+      const grid = document.getElementById('galleryGrid');
+      const photos = currentAlbum === 'all'
+        ? allPhotos
+        : allPhotos.filter(p => p.album_name === currentAlbum);
+
+      if (photos.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+          <p style="font-size:2rem;margin-bottom:0.5rem;">📸</p>
+          <p>Aucune photo dans cet album pour le moment.</p>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = photos.map((p, i) => `
+        <div class="gallery-item" onclick="openLightbox(${i})" data-index="${i}">
+          <img src="${getImageUrl(p.image_path)}" alt="${p.description || p.album_name}" loading="lazy">
+          <div class="gallery-item-overlay">
+            <span>${p.description || p.album_name}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Mettre à jour la liste des photos filtrées pour la navigation
+      window._currentPhotos = photos;
+    }
+
+    function loadVideos(settings) {
+      const grid = document.getElementById('videosGrid');
+      const videoCount = parseInt(settings.video_count) || 0;
+      let html = '';
+      for (let i = 1; i <= videoCount; i++) {
+        var title = settings['video_' + i + '_title'];
+        if (!title) continue;
+        var desc = settings['video_' + i + '_desc'] || '';
+        var icon = settings['video_' + i + '_icon'] || '🎬';
+        var url = settings['video_' + i + '_url'] || '';
+        var thumb = url && url.indexOf('youtube.com/watch?v=') !== -1 ? 'https://img.youtube.com/vi/' + url.split('v=')[1].split('&')[0] + '/mqdefault.jpg' : '';
+        html += '<div class="card" style="text-align:center;padding:0;overflow:hidden;">' +
+          (thumb ? '<img src="' + thumb + '" alt="' + title + '" style="width:100%;aspect-ratio:16/9;object-fit:cover;" loading="lazy">' : '') +
+          '<div style="padding:1.5rem;">' +
+          '<span style="font-size:2rem;">' + icon + '</span>' +
+          '<h4 style="margin:0.5rem 0;">' + title + '</h4>' +
+          '<p style="font-size:0.9rem;color:var(--text-light);margin-bottom:1rem;">' + desc + '</p>' +
+          (url ? '<a href="' + url + '" target="_blank" rel="noopener" class="btn btn-primary">Regarder ▶️</a>' : '<span style="font-size:0.85rem;color:var(--text-light);">Vidéo à venir</span>') +
+          '</div></div>';
+      }
+      grid.innerHTML = html || '<div class="empty-state" style="grid-column:1/-1;">Aucune vidéo pour le moment.</div>';
+    }
+
+    function openLightbox(index) {
+      lightboxIndex = index;
+      updateLightbox();
+      document.getElementById('lightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+      lightboxIndex = -1;
+    }
+
+    function navigateLightbox(dir) {
+      const photos = window._currentPhotos || allPhotos;
+      if (photos.length === 0) return;
+      lightboxIndex = (lightboxIndex + dir + photos.length) % photos.length;
+      updateLightbox();
+    }
+
+    function updateLightbox() {
+      const photos = window._currentPhotos || allPhotos;
+      if (lightboxIndex < 0 || lightboxIndex >= photos.length) return;
+      const p = photos[lightboxIndex];
+      document.getElementById('lightboxImg').src = getImageUrl(p.image_path);
+      document.getElementById('lightboxImg').alt = p.description || p.album_name;
+      document.getElementById('lightboxCaption').textContent =
+        `${p.album_name} ${p.description ? '— ' + p.description : ''} (${lightboxIndex + 1}/${photos.length})`;
+    }
+
+    // Touches clavier
+    document.addEventListener('keydown', e => {
+      const lb = document.getElementById('lightbox');
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
+    });
+
+    // Clic sur fond de lightbox
+    document.getElementById('lightbox').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeLightbox();
+    });
+
+    document.addEventListener('DOMContentLoaded', loadGalleryPage);
+  </script>
+</body>
+</html>

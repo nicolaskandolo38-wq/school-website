@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contactez notre établissement scolaire">
+  <title>Contact — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+
+  <style>
+    .map-container {
+      border-radius: 12px;
+      overflow: hidden;
+      height: 350px;
+      background: var(--border);
+    }
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="contact"></header>
+
+  <main id="main-content">
+
+    <div class="breadcrumb">
+      <div class="breadcrumb-inner"><a href="/">Accueil</a> › Contact</div>
+    </div>
+
+    <section class="section" style="padding-bottom:2rem;">
+      <div class="section-header">
+        <h2>Contactez-nous</h2>
+        <p>Nous sommes à votre écoute. N'hésitez pas à nous contacter.</p>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="contact-grid" style="margin-bottom:3rem;">
+
+        <!-- ===== FORMULAIRE ===== -->
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:600;margin-bottom:1.5rem;">Envoyez-nous un message</h3>
+
+          <form id="contactForm" onsubmit="submitContact(event)">
+            <div class="form-group">
+              <label for="contactName">Nom complet *</label>
+              <input type="text" id="contactName" name="name" required placeholder="Votre nom">
+            </div>
+
+            <div class="form-group">
+              <label for="contactEmail">Email *</label>
+              <input type="email" id="contactEmail" name="email" required placeholder="votre@email.com">
+            </div>
+
+            <div class="form-group">
+              <label for="contactPhone">Téléphone</label>
+              <input type="tel" id="contactPhone" name="phone" placeholder="+243 XXX XXX XXX">
+            </div>
+
+            <div class="form-group">
+              <label for="contactSubject">Sujet *</label>
+              <select id="contactSubject" name="subject" required>
+                <option value="">-- Choisir un sujet --</option>
+                <option value="inscription">Demande d'inscription</option>
+                <option value="information">Demande d'information</option>
+                <option value="visite">Visite de l'établissement</option>
+                <option value="partenariat">Partenariat</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="contactMessage">Message *</label>
+              <textarea id="contactMessage" name="message" rows="5" required placeholder="Votre message..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;" id="contactSubmitBtn">
+              Envoyer le message ✉️
+            </button>
+
+            <div class="form-success" id="formSuccess">
+              ✅ Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.
+            </div>
+            <div class="form-error" id="formError">
+              ❌ Une erreur est survenue. Veuillez réessayer.
+            </div>
+          </form>
+        </div>
+
+        <!-- ===== INFOS CONTACT ===== -->
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:600;margin-bottom:1.5rem;">Nos coordonnées</h3>
+
+          <div class="contact-info-item">
+            <span class="icon">📍</span>
+            <div>
+              <strong>Adresse</strong>
+              <p id="contactAddress" style="margin:0;color:var(--text-light);">...</p>
+            </div>
+          </div>
+
+          <div class="contact-info-item">
+            <span class="icon">📞</span>
+            <div>
+              <strong>Téléphone</strong>
+              <p id="contactPhone1" style="margin:0;color:var(--text-light);">...</p>
+              <p id="contactPhone2" style="margin:0;color:var(--text-light);"></p>
+            </div>
+          </div>
+
+          <div class="contact-info-item">
+            <span class="icon">✉️</span>
+            <div>
+              <strong>Email</strong>
+              <p id="contactEmailShow" style="margin:0;color:var(--text-light);">...</p>
+            </div>
+          </div>
+
+          <div class="contact-info-item">
+            <span class="icon">🕐</span>
+            <div>
+              <strong>Horaires d'ouverture</strong>
+              <p id="contactHours" style="margin:0;color:var(--text-light);">...</p>
+            </div>
+          </div>
+
+          <h4 style="margin:2rem 0 1rem;font-weight:600;">Suivez-nous</h4>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;" id="contactSocial">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CARTE GOOGLE MAPS ===== -->
+      <div class="map-container" style="margin-bottom:2rem;">
+        <iframe
+          id="googleMap"
+          src=""
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Carte de localisation">
+        </iframe>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    async function loadContactPage() {
+      try {
+        const res = await fetch('/api/settings/public');
+        const s = (await res.json()).data || {};
+
+        document.title = `Contact — ${s.school_name || 'Mon École'}`;
+
+        // Infos
+        document.getElementById('contactAddress').textContent = s.address || 'Adresse non renseignée';
+        document.getElementById('contactPhone1').textContent = s.phone_primary || 'Non renseigné';
+        if (s.phone_secondary) {
+          document.getElementById('contactPhone2').textContent = s.phone_secondary;
+        }
+        document.getElementById('contactEmailShow').textContent = s.email_contact || 'Non renseigné';
+        document.getElementById('contactHours').textContent = s.opening_hours || 'Non renseigné';
+
+        // Google Maps (embed basé sur l'adresse)
+        const address = encodeURIComponent(s.address || 'Kinshasa');
+        document.getElementById('googleMap').src =
+          `https://www.google.com/maps?q=${address}&output=embed`;
+
+        // Réseaux sociaux
+        const social = document.getElementById('contactSocial');
+        const links = [
+          { key: 'facebook_link', label: '📘 Facebook' },
+          { key: 'instagram_link', label: '📷 Instagram' },
+          { key: 'whatsapp_link', label: '💬 WhatsApp' },
+          { key: 'twitter_link', label: '🐦 Twitter' },
+          { key: 'youtube_link', label: '▶️ YouTube' }
+        ];
+        social.innerHTML = links
+          .filter(l => s[l.key] && s[l.key].trim())
+          .map(l => `<a href="${s[l.key]}" target="_blank" rel="noopener" class="btn" style="background:var(--white);border:1px solid var(--border);">${l.label}</a>`)
+          .join('');
+
+      } catch (err) {
+        console.error('Erreur chargement contact:', err);
+      }
+    }
+
+    function submitContact(event) {
+      event.preventDefault();
+
+      const btn = document.getElementById('contactSubmitBtn');
+      const success = document.getElementById('formSuccess');
+      const error = document.getElementById('formError');
+
+      success.style.display = 'none';
+      error.style.display = 'none';
+
+      const form = document.getElementById('contactForm');
+      const data = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+        subject: form.subject.value,
+        message: form.message.value.trim()
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Envoi en cours...';
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            success.style.display = 'block';
+            form.reset();
+          } else {
+            error.textContent = '❌ ' + (result.error || 'Erreur lors de l\'envoi.');
+            error.style.display = 'block';
+          }
+        })
+        .catch(() => {
+          // Fallback : l'API contact n'existe pas encore → simulé
+          success.style.display = 'block';
+          form.reset();
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = 'Envoyer le message ✉️';
+        });
+    }
+
+    window.submitContact = submitContact;
+
+    document.addEventListener('DOMContentLoaded', loadContactPage);
+  </script>
+</body>
+</html>

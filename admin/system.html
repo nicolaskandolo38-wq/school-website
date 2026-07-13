@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Système — Administration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="sidebar">
+      <div style="margin-bottom:2rem;padding:0.5rem;">
+        <div style="font-size:2rem;text-align:center;">🏫</div>
+        <div id="sidebarSchoolName" style="text-align:center;font-weight:600;margin-top:0.5rem;">Admin</div>
+      </div>
+      <nav id="sidebarNav"></nav>
+      <div style="margin-top:auto;padding-top:2rem;">
+        <button onclick="logout()" style="width:100%;padding:0.75rem;background:#1f2937;color:#9ca3af;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">🚪 Déconnexion</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🔧 Système</h1>
+      <p style="color:var(--text-light);margin-bottom:2rem;">Changer le mot de passe, consulter les logs, sauvegarder la base de données</p>
+
+      <div id="toast" style="display:none;position:fixed;top:1rem;right:1rem;background:#047857;color:white;padding:1rem 1.5rem;border-radius:8px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+        <!-- ===== MOT DE PASSE ===== -->
+        <div class="section-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+          <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">🔐 Changer le mot de passe</h3>
+          <div class="form-group">
+            <label>Mot de passe actuel</label>
+            <input type="password" id="currentPassword" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="newPassword" placeholder="Min. 8 caractères">
+          </div>
+          <div class="form-group">
+            <label>Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••">
+          </div>
+          <button onclick="changePassword()" class="btn btn-primary" style="width:100%;">💾 Changer le mot de passe</button>
+        </div>
+
+        <!-- ===== SAUVEGARDE / RESTAURATION ===== -->
+        <div class="section-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+          <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">💾 Sauvegarde & Restauration</h3>
+
+          <button onclick="backupDb()" class="btn btn-primary" style="width:100%;margin-bottom:1rem;">📦 Créer une sauvegarde</button>
+
+          <div id="backupList" style="margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:var(--text-light);">Chargement des sauvegardes...</p>
+          </div>
+
+          <button onclick="location.reload()" class="btn" style="width:100%;background:var(--white);border:1px solid var(--border);">🔄 Rafraîchir la liste</button>
+        </div>
+
+        <!-- ===== LOGS DE CONNEXION ===== -->
+        <div class="section-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;grid-column:1/-1;">
+          <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">📋 Logs de connexion</h3>
+          <div style="overflow-x:auto;" id="loginLogs">
+            <div class="loading">Chargement...</div>
+          </div>
+        </div>
+
+        <!-- ===== STATS DB ===== -->
+        <div class="section-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;grid-column:1/-1;">
+          <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">📊 Statistiques de la base de données</h3>
+          <div id="dbStats"><div class="loading">Chargement...</div></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('admin_token');
+    function authHeaders() { return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }; }
+
+    async function checkAuth() {
+      if (!token) { window.location.href = '/admin/login.html'; return false; }
+      try { return (await (await fetch(`${API}/auth/me`, { headers: authHeaders() })).json()).success; }
+      catch { window.location.href = '/admin/login.html'; return false; }
+    }
+
+    function logout() { fetch(`${API}/auth/logout`, { method: 'POST' }).catch(()=>{}); localStorage.removeItem('admin_token'); window.location.href = '/admin/login.html'; }
+    function toast(msg, isError) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = isError ? '#dc2626' : '#047857';
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function buildSidebar() {
+      const pgs = ['dashboard','settings','content','news-manager','gallery-manager','contacts','system'];
+      const icons = ['📊','⚙️','📄','📝','🖼️','✉️','🔧'];
+      const labels = ['Dashboard','Paramètres','Pages','Actualités','Galerie','Messages','Système'];
+      document.getElementById('sidebarNav').innerHTML = pgs.map((p,i) => `
+        <a href="/admin/${p}.html" style="display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;color:${p==='system'?'var(--white)':'#9ca3af'};text-decoration:none;border-radius:8px;background:${p==='system'?'var(--primary)':'transparent'};margin-bottom:0.25rem;">
+          ${icons[i]} ${labels[i]}
+        </a>`).join('');
+    }
+
+    // ============ MOT DE PASSE ============
+    async function changePassword() {
+      const current = document.getElementById('currentPassword').value;
+      const newPwd = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      if (!current || !newPwd) return toast('❌ Tous les champs sont requis', true);
+      if (newPwd.length < 8) return toast('❌ Le mot de passe doit faire au moins 8 caractères', true);
+      if (newPwd !== confirm) return toast('❌ Les mots de passe ne correspondent pas', true);
+
+      try {
+        const res = await fetch(`${API}/auth/change-password`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ currentPassword: current, newPassword: newPwd })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('✅ Mot de passe changé avec succès !');
+          document.getElementById('currentPassword').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('confirmPassword').value = '';
+        } else {
+          toast('❌ ' + (data.error || 'Erreur'), true);
+        }
+      } catch(e) {
+        toast('❌ Erreur de connexion', true);
+      }
+    }
+
+    // ============ LOGS ============
+    async function loadLogs() {
+      try {
+        const res = await fetch(`${API}/auth/login-logs`, { headers: authHeaders() });
+        const data = await res.json();
+        if (!data.success) return;
+        document.getElementById('loginLogs').innerHTML = `
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="text-align:left;border-bottom:2px solid var(--border);">
+              <th style="padding:0.5rem;">Date</th>
+              <th style="padding:0.5rem;">Utilisateur</th>
+              <th style="padding:0.5rem;">IP</th>
+              <th style="padding:0.5rem;">Résultat</th>
+            </tr></thead>
+            <tbody>${data.data.map(l => `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;font-size:0.85rem;">${new Date(l.attempted_at).toLocaleString('fr-FR')}</td>
+                <td style="padding:0.5rem;">${l.username}</td>
+                <td style="padding:0.5rem;font-size:0.8rem;color:var(--text-light);">${l.ip_address || '?'}</td>
+                <td style="padding:0.5rem;">${l.success ? '✅ Succès' : '❌ Échec'}</td>
+              </tr>`).join('')}</tbody>
+          </table>`;
+      } catch(e) {
+        document.getElementById('loginLogs').innerHTML = '<p style="color:var(--text-light);">Impossible de charger les logs.</p>';
+      }
+    }
+
+    // ============ BACKUP ============
+    async function backupDb() {
+      try {
+        toast('📦 Sauvegarde en cours...');
+        const res = await fetch(`${API}/system/backup`, {
+          method: 'POST',
+          headers: authHeaders()
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('✅ ' + (data.message || 'Sauvegarde créée !'));
+          loadBackups();
+        } else {
+          toast('❌ ' + (data.error || 'Erreur'), true);
+        }
+      } catch(e) {
+        // Fallback: simulate
+        toast('📦 La sauvegarde sera disponible via npm run db:backup');
+      }
+    }
+
+    async function loadBackups() {
+      try {
+        const res = await fetch(`${API}/system/backups`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success && data.data && data.data.length > 0) {
+          document.getElementById('backupList').innerHTML = data.data.map((b,i) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+              <span>💾 ${b.name} (${b.size})</span>
+              <button onclick="restoreDb('${b.name}')" class="btn" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:var(--white);border:1px solid var(--border);">Restaurer</button>
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('backupList').innerHTML = '<p style="font-size:0.85rem;color:var(--text-light);">Aucune sauvegarde. Utilisez npm run db:backup dans le terminal.</p>';
+        }
+      } catch(e) {
+        document.getElementById('backupList').innerHTML = '<p style="font-size:0.85rem;color:var(--text-light);">Sauvegardes via terminal : npm run db:backup</p>';
+      }
+    }
+
+    async function restoreDb(filename) {
+      if (!confirm(`⚠️ Restaurer la sauvegarde "${filename}" ? Toutes les données actuelles seront remplacées.`)) return;
+      try {
+        const res = await fetch(`${API}/system/restore`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ filename })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('✅ Base restaurée avec succès ! Redémarrage conseillé.');
+        } else {
+          toast('❌ ' + (data.error || 'Erreur'), true);
+        }
+      } catch(e) {
+        toast('ℹ️ Utilisez npm run db:restore dans le terminal', true);
+      }
+    }
+
+    // ============ DB STATS ============
+    async function loadDbStats() {
+      try {
+        const tables = ['admins','news','events','gallery','testimonials','team','programs','contact_messages','settings','pages','login_logs','site_visits'];
+        const results = {};
+        for (const t of tables) {
+          try {
+            const res = await fetch(`${API}/${t}`, { headers: authHeaders() });
+            const d = await res.json();
+            if (d.success) results[t] = Array.isArray(d.data) ? d.data.length : (d.total || '?');
+          } catch { results[t] = '?'; }
+        }
+        document.getElementById('dbStats').innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.5rem;">
+            ${Object.entries(results).map(([k,v]) => `
+              <div style="background:var(--bg);padding:0.75rem;border-radius:8px;text-align:center;">
+                <div style="font-weight:600;font-size:0.85rem;">${k}</div>
+                <div style="font-size:1.5rem;font-weight:800;color:var(--primary);">${v}</div>
+              </div>
+            `).join('')}
+          </div>`;
+      } catch(e) {
+        document.getElementById('dbStats').innerHTML = '<p style="color:var(--text-light);">Statistiques non disponibles.</p>';
+      }
+    }
+
+    window.logout = logout;
+    window.changePassword = changePassword;
+    window.backupDb = backupDb;
+    window.restoreDb = restoreDb;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!(await checkAuth())) return;
+      buildSidebar();
+      loadLogs();
+      loadBackups();
+      loadDbStats();
+    });
+  </script>
+</body>
+</html>

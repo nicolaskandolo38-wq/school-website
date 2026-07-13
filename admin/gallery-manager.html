@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galerie & Témoignages — Administration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .tab-btn { padding:0.5rem 1.5rem; border:none; cursor:pointer; font-weight:500; border-radius:50px; font-size:0.9rem; transition:all 0.15s; }
+    .tab-btn.active { background:var(--primary); color:var(--white); }
+    .tab-btn:not(.active) { background:var(--white); color:var(--text); border:2px solid var(--border); }
+    .photo-thumb { width:80px; height:60px; object-fit:cover; border-radius:6px; flex-shrink:0; }
+    .badge { font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:50px; font-weight:500; }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="sidebar">
+      <div style="margin-bottom:2rem;padding:0.5rem;">
+        <div style="font-size:2rem;text-align:center;">🏫</div>
+        <div id="sidebarSchoolName" style="text-align:center;font-weight:600;margin-top:0.5rem;">Admin</div>
+      </div>
+      <nav id="sidebarNav"></nav>
+      <div style="margin-top:auto;padding-top:2rem;">
+        <button onclick="logout()" style="width:100%;padding:0.75rem;background:#1f2937;color:#9ca3af;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">🚪 Déconnexion</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">🖼️ Galerie & Témoignages</h1>
+      <p style="color:var(--text-light);margin-bottom:1.5rem;">Gérez les photos et les témoignages</p>
+
+      <div id="toast" style="display:none;position:fixed;top:1rem;right:1rem;background:#047857;color:white;padding:1rem 1.5rem;border-radius:8px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);"></div>
+
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+        <button class="tab-btn active" onclick="switchTab('gallery')" id="tabGallery">🖼️ Galerie</button>
+        <button class="tab-btn" onclick="switchTab('testimonials')" id="tabTestimonials">💬 Témoignages</button>
+      </div>
+
+      <!-- ===== GALERIE ===== -->
+      <div id="galleryPanel">
+        <button onclick="showGalleryForm()" class="btn btn-primary" style="margin-bottom:1rem;">+ Ajouter une photo</button>
+        <div id="galleryList"><div class="loading">Chargement...</div></div>
+        <div id="galleryForm" style="display:none;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-top:1rem;">
+          <h3>Ajouter une photo</h3>
+          <div class="form-group"><label>Album *</label><input type="text" id="galAlbum" placeholder="Ex: Cérémonie 2024" required></div>
+          <div class="form-group"><label>Description</label><input type="text" id="galDesc"></div>
+          <div class="form-group"><label>Photo *</label><input type="file" id="galFile" accept="image/*" required></div>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="saveGallery()" class="btn btn-primary">💾 Enregistrer</button>
+            <button onclick="document.getElementById('galleryForm').style.display='none'" class="btn" style="background:var(--white);border:1px solid var(--border);">Annuler</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TÉMOIGNAGES ===== -->
+      <div id="testimonialsPanel" style="display:none;">
+        <button onclick="showTestimonialForm()" class="btn btn-primary" style="margin-bottom:1rem;">+ Ajouter un témoignage</button>
+        <div id="testimonialList"><div class="loading">Chargement...</div></div>
+        <div id="testimonialForm" style="display:none;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-top:1rem;">
+          <h3 id="tFormTitle">Ajouter un témoignage</h3>
+          <input type="hidden" id="tEditId">
+          <div class="form-group"><label>Nom *</label><input type="text" id="tName" required></div>
+          <div class="form-group"><label>Rôle (ex: Parent d'élève)</label><input type="text" id="tRole"></div>
+          <div class="form-group"><label>Témoignage *</label><textarea id="tContent" rows="4" required></textarea></div>
+          <div class="form-group"><label>Photo</label><input type="file" id="tPhoto" accept="image/*"></div>
+          <div class="form-group"><label><input type="checkbox" id="tActive" checked> Actif</label></div>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="saveTestimonial()" class="btn btn-primary">💾 Enregistrer</button>
+            <button onclick="document.getElementById('testimonialForm').style.display='none'" class="btn" style="background:var(--white);border:1px solid var(--border);">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('admin_token');
+    function authHeaders(noCT) { const h = { Authorization: `Bearer ${token}` }; if (!noCT) h['Content-Type'] = 'application/json'; return h; }
+
+    async function checkAuth() {
+      if (!token) { window.location.href = '/admin/login.html'; return false; }
+      try { return (await (await fetch(`${API}/auth/me`, { headers: authHeaders() })).json()).success; }
+      catch { window.location.href = '/admin/login.html'; return false; }
+    }
+
+    function logout() { fetch(`${API}/auth/logout`, { method: 'POST' }).catch(() => {}); localStorage.removeItem('admin_token'); window.location.href = '/admin/login.html'; }
+    function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+
+    function buildSidebar() {
+      const pgs = ['dashboard','settings','content','news-manager','gallery-manager','contacts','system'];
+      const icons = ['📊','⚙️','📄','📝','🖼️','✉️','🔧'];
+      const labels = ['Dashboard','Paramètres','Pages','Actualités','Galerie','Messages','Système'];
+      document.getElementById('sidebarNav').innerHTML = pgs.map((p,i) => `
+        <a href="/admin/${p}.html" style="display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;color:${p==='gallery-manager'?'var(--white)':'#9ca3af'};text-decoration:none;border-radius:8px;background:${p==='gallery-manager'?'var(--primary)':'transparent'};margin-bottom:0.25rem;">
+          ${icons[i]} ${labels[i]}
+        </a>`).join('');
+    }
+
+    let currentTab = 'gallery';
+    window.switchTab = function(tab) {
+      currentTab = tab;
+      document.getElementById('galleryPanel').style.display = tab === 'gallery' ? '' : 'none';
+      document.getElementById('testimonialsPanel').style.display = tab === 'testimonials' ? '' : 'none';
+      document.getElementById('tabGallery').className = `tab-btn ${tab === 'gallery' ? 'active' : ''}`;
+      document.getElementById('tabTestimonials').className = `tab-btn ${tab === 'testimonials' ? 'active' : ''}`;
+      if (tab === 'testimonials') loadTestimonials();
+    };
+
+    // ============ GALLERY ============
+    async function loadGallery() {
+      try {
+        const res = await fetch(`${API}/gallery`, { headers: authHeaders() });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Erreur API');
+        document.getElementById('galleryList').innerHTML = data.data.length ? data.data.map(p => `
+        <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;border-bottom:1px solid var(--border);">
+          <img src="${p.image_path}" class="photo-thumb" alt="${p.description || ''}">
+          <div style="flex:1;">
+            <strong>${p.album_name}</strong>
+            <div style="font-size:0.8rem;color:var(--text-light);">${p.description || ''} · ${new Date(p.upload_date).toLocaleDateString('fr-FR')}</div>
+          </div>
+          <button onclick="deletePhoto(${p.id})" class="btn" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">🗑️</button>
+        </div>`).join('') : '<p style="color:var(--text-light);padding:1rem;">Aucune photo.</p>';
+      } catch(e) {
+        document.getElementById('galleryList').innerHTML = '<p style="color:#dc2626;padding:1rem;">❌ Erreur de chargement. Vérifiez votre connexion et reconnectez-vous.</p>';
+      }
+    }
+
+    function showGalleryForm() {
+      document.getElementById('galAlbum').value = '';
+      document.getElementById('galDesc').value = '';
+      document.getElementById('galFile').value = '';
+      document.getElementById('galleryForm').style.display = 'block';
+    }
+
+    async function saveGallery() {
+      const file = document.getElementById('galFile').files[0];
+      if (!file) return toast('❌ Sélectionnez une photo');
+
+      const fd = new FormData();
+      fd.append('image', file);
+      fd.append('album_name', document.getElementById('galAlbum').value || 'Général');
+      fd.append('description', document.getElementById('galDesc').value);
+
+      const res = await fetch(`${API}/gallery`, {
+        method: 'POST',
+        headers: authHeaders(true),
+        body: fd
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('galleryForm').style.display = 'none';
+        toast('✅ Photo ajoutée !');
+        loadGallery();
+      } else {
+        toast('❌ ' + (data.error || 'Erreur'));
+      }
+    }
+
+    async function deletePhoto(id) {
+      if (!confirm('Supprimer cette photo ?')) return;
+      await fetch(`${API}/gallery/${id}`, { method: 'DELETE', headers: authHeaders() });
+      toast('🗑️ Photo supprimée');
+      loadGallery();
+    }
+
+    // ============ TESTIMONIALS ============
+    async function loadTestimonials() {
+      const res = await fetch(`${API}/testimonials`, { headers: authHeaders() });
+      const data = await res.json();
+      if (!data.success) return;
+      document.getElementById('testimonialList').innerHTML = data.data.length ? data.data.map(t => `
+        <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+              <strong>${t.name}</strong>
+              ${t.role ? `<span style="font-size:0.8rem;color:var(--text-light);">— ${t.role}</span>` : ''}
+              <span class="badge" style="background:${t.is_active?'#dcfce7':'#fee2e2'};color:${t.is_active?'#166534':'#991b1b'};">
+                ${t.is_active ? 'Actif' : 'Inactif'}
+              </span>
+            </div>
+            <p style="font-size:0.9rem;color:var(--text);font-style:italic;">« ${t.content} »</p>
+          </div>
+          <div style="display:flex;gap:0.25rem;flex-shrink:0;">
+            <button onclick="editTestimonial(${t.id})" class="btn" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:var(--white);border:1px solid var(--border);">✏️</button>
+            <button onclick="deleteTestimonial(${t.id},'${t.name.replace(/'/g,"\\'")}')" class="btn" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">🗑️</button>
+          </div>
+        </div>`).join('') : '<p style="color:var(--text-light);padding:1rem;">Aucun témoignage.</p>';
+    }
+
+    function showTestimonialForm() {
+      document.getElementById('tFormTitle').textContent = 'Ajouter un témoignage';
+      ['tEditId','tName','tRole','tContent'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('tActive').checked = true;
+      document.getElementById('testimonialForm').style.display = 'block';
+    }
+
+    async function editTestimonial(id) {
+      const res = await fetch(`${API}/testimonials/${id}`, { headers: authHeaders() });
+      const t = (await res.json()).data;
+      if (!t) return;
+      document.getElementById('tFormTitle').textContent = 'Modifier le témoignage';
+      document.getElementById('tEditId').value = t.id;
+      document.getElementById('tName').value = t.name;
+      document.getElementById('tRole').value = t.role || '';
+      document.getElementById('tContent').value = t.content;
+      document.getElementById('tActive').checked = !!t.is_active;
+      document.getElementById('testimonialForm').style.display = 'block';
+    }
+
+    async function saveTestimonial() {
+      const id = document.getElementById('tEditId').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `${API}/testimonials/${id}` : `${API}/testimonials`;
+
+      const photoInput = document.getElementById('tPhoto');
+      let body, headers;
+
+      if (photoInput.files[0]) {
+        const fd = new FormData();
+        fd.append('image', photoInput.files[0]);
+        fd.append('name', document.getElementById('tName').value);
+        fd.append('role', document.getElementById('tRole').value);
+        fd.append('content', document.getElementById('tContent').value);
+        fd.append('is_active', document.getElementById('tActive').checked ? '1' : '0');
+        body = fd;
+        headers = authHeaders(true);
+      } else {
+        body = JSON.stringify({
+          name: document.getElementById('tName').value,
+          role: document.getElementById('tRole').value,
+          content: document.getElementById('tContent').value,
+          is_active: document.getElementById('tActive').checked
+        });
+        headers = authHeaders();
+      }
+
+      const res = await fetch(url, { method, headers, body });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('testimonialForm').style.display = 'none';
+        toast(id ? '✅ Témoignage modifié' : '✅ Témoignage ajouté');
+        loadTestimonials();
+      } else {
+        toast('❌ ' + (data.error || 'Erreur'));
+      }
+    }
+
+    async function deleteTestimonial(id, name) {
+      if (!confirm(`Supprimer le témoignage de ${name} ?`)) return;
+      await fetch(`${API}/testimonials/${id}`, { method: 'DELETE', headers: authHeaders() });
+      toast('🗑️ Témoignage supprimé');
+      loadTestimonials();
+    }
+
+    window.logout = logout;
+    window.showGalleryForm = showGalleryForm;
+    window.saveGallery = saveGallery;
+    window.deletePhoto = deletePhoto;
+    window.showTestimonialForm = showTestimonialForm;
+    window.editTestimonial = editTestimonial;
+    window.saveTestimonial = saveTestimonial;
+    window.deleteTestimonial = deleteTestimonial;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!(await checkAuth())) return;
+      buildSidebar();
+      loadGallery();
+    });
+  </script>
+</body>
+</html>

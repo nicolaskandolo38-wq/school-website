@@ -1,0 +1,8 @@
+node_modules/
+.env
+database/school.db
+database/*.backup.db
+public/uploads/**/*
+!public/uploads/**/.gitkeep
+*.log
+.DS_Store

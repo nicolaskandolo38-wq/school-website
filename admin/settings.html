@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paramètres — Administration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .preview-logo { width:120px; height:auto; border-radius:8px; border:1px dotted var(--border); padding:0.5rem; background:var(--bg); }
+    .preview-banner { width:100%; max-width:400px; height:120px; object-fit:cover; border-radius:8px; border:1px dotted var(--border); }
+    .section-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; }
+    .section-card h3 { font-size:1.1rem; font-weight:600; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="sidebar">
+      <div style="margin-bottom:2rem;padding:0.5rem;">
+        <div style="font-size:2rem;text-align:center;">🏫</div>
+        <div id="sidebarSchoolName" style="text-align:center;font-weight:600;margin-top:0.5rem;">Admin</div>
+      </div>
+      <nav id="sidebarNav"></nav>
+      <div style="margin-top:auto;padding-top:2rem;">
+        <button onclick="logout()" style="width:100%;padding:0.75rem;background:#1f2937;color:#9ca3af;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">🚪 Déconnexion</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">⚙️ Paramètres Généraux</h1>
+      <p style="color:var(--text-light);margin-bottom:2rem;">Modifiez le logo, la bannière, les informations et les réseaux sociaux</p>
+
+      <!-- Toast notification -->
+      <div id="toast" style="display:none;position:fixed;top:1rem;right:1rem;background:#047857;color:white;padding:1rem 1.5rem;border-radius:8px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);"></div>
+
+      <!-- ===== IDENTITÉ ===== -->
+      <div class="section-card">
+        <h3>🏫 Identité de l'école</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label>Nom de l'école</label>
+            <input type="text" id="school_name">
+          </div>
+          <div class="form-group">
+            <label>Slogan</label>
+            <input type="text" id="school_slogan">
+          </div>
+          <div class="form-group">
+            <label>Titre du site (SEO)</label>
+            <input type="text" id="site_title">
+          </div>
+          <div class="form-group">
+            <label>Description (SEO)</label>
+            <textarea id="meta_description" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LOGO & BANNIÈRE ===== -->
+      <div class="section-card">
+        <h3>🖼️ Logo & Bannière</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div>
+            <label style="font-weight:500;font-size:0.9rem;display:block;margin-bottom:0.5rem;">Logo</label>
+            <div style="display:flex;gap:1rem;align-items:flex-start;">
+              <img id="logoPreview" src="" class="preview-logo" alt="Logo preview">
+              <div style="flex:1;">
+                <input type="file" id="logoUpload" accept="image/*" onchange="previewFile(this, 'logoPreview')">
+                <p style="font-size:0.8rem;color:var(--text-light);margin-top:0.25rem;">PNG, JPG ou WEBP — max 5 MB</p>
+                <button onclick="uploadFile('logoUpload', 'logo')" class="btn btn-primary" style="margin-top:0.5rem;font-size:0.85rem;">Uploader le logo</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label style="font-weight:500;font-size:0.9rem;display:block;margin-bottom:0.5rem;">Bannière d'accueil</label>
+            <img id="bannerPreview" src="" class="preview-banner" alt="Banner preview">
+            <input type="file" id="bannerUpload" accept="image/*" onchange="previewFile(this, 'bannerPreview')" style="margin-top:0.5rem;">
+            <p style="font-size:0.8rem;color:var(--text-light);margin-top:0.25rem;">PNG, JPG ou WEBP — idéal 1920×600px</p>
+            <button onclick="uploadFile('bannerUpload', 'banner')" class="btn btn-primary" style="margin-top:0.5rem;font-size:0.85rem;">Uploader la bannière</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== COULEURS ===== -->
+      <div class="section-card">
+        <h3>🎨 Couleurs du site</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label>Couleur principale</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input type="color" id="primary_color" style="width:48px;height:48px;border:none;cursor:pointer;">
+              <input type="text" id="primary_color_text" style="flex:1;font-family:monospace;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Couleur secondaire</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input type="color" id="secondary_color" style="width:48px;height:48px;border:none;cursor:pointer;">
+              <input type="text" id="secondary_color_text" style="flex:1;font-family:monospace;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STATISTIQUES ===== -->
+      <div class="section-card">
+        <h3>📊 Chiffres clés (page d'accueil)</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label>Années d'expérience</label><input type="text" id="stat_years" placeholder="30+"></div>
+          <div class="form-group"><label>Élèves formés</label><input type="text" id="stat_students" placeholder="1500+"></div>
+          <div class="form-group"><label>Taux de réussite</label><input type="text" id="stat_success" placeholder="95%"></div>
+          <div class="form-group"><label>Enseignants qualifiés</label><input type="text" id="stat_teachers" placeholder="50+"></div>
+        </div>
+      </div>
+
+      <!-- ===== INFRASTRUCTURES (6 entrées) ===== -->
+      <div class="section-card">
+        <h3>🏗️ Infrastructures (page À propos)</h3>
+        <div id="infraEditor"></div>
+      </div>
+
+      <!-- ===== VIDÉOS ===== -->
+      <div class="section-card">
+        <h3>🎬 Vidéos (page À propos)</h3>
+        <div id="videosEditor"></div>
+        <button onclick="addVideo()" class="btn btn-primary" style="margin-top:1rem;font-size:0.9rem;">+ Ajouter une vidéo</button>
+      </div>
+
+      <!-- ===== DIRECTEUR ===== -->
+      <div class="section-card">
+        <h3>👤 Mot du Directeur</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label>Nom</label><input type="text" id="director_name"></div>
+          <div class="form-group"><label>Titre</label><input type="text" id="director_title"></div>
+          <div class="form-group" style="grid-column:1/-1;"><label>Message</label><textarea id="director_message" rows="4"></textarea></div>
+          <div>
+            <label style="font-weight:500;font-size:0.9rem;">Photo du directeur</label>
+            <img id="directorPhotoPreview" src="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px dotted var(--border);margin-top:0.5rem;background:var(--bg);">
+            <input type="file" id="directorPhotoUpload" accept="image/*" onchange="previewFile(this, 'directorPhotoPreview')" style="margin-top:0.5rem;">
+            <button onclick="uploadFile('directorPhotoUpload', 'team')" class="btn btn-primary" style="margin-top:0.5rem;font-size:0.85rem;">Uploader</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== À PROPOS ===== -->
+      <div class="section-card">
+        <h3>📖 Contenu "À propos"</h3>
+        <div class="form-group"><label>Histoire de l'école</label><textarea id="about_history" rows="4"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+          <div class="form-group"><label>Mission</label><textarea id="about_mission" rows="3"></textarea></div>
+          <div class="form-group"><label>Vision</label><textarea id="about_vision" rows="3"></textarea></div>
+          <div class="form-group"><label>Valeurs</label><textarea id="about_values" rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <!-- ===== CONTACTS & RÉSEAUX ===== -->
+      <div class="section-card">
+        <h3>📞 Contacts</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label>Téléphone principal</label><input type="text" id="phone_primary"></div>
+          <div class="form-group"><label>Téléphone secondaire</label><input type="text" id="phone_secondary"></div>
+          <div class="form-group"><label>Email de contact</label><input type="email" id="email_contact"></div>
+          <div class="form-group"><label>Email admin</label><input type="email" id="email_admin"></div>
+          <div class="form-group"><label>Adresse</label><input type="text" id="address"></div>
+          <div class="form-group"><label>Horaires d'ouverture</label><input type="text" id="opening_hours"></div>
+        </div>
+        <h4 style="margin:1.5rem 0 1rem;font-size:0.95rem;font-weight:600;">Réseaux sociaux</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label>Facebook</label><input type="url" id="facebook_link" placeholder="https://facebook.com/..."></div>
+          <div class="form-group"><label>Instagram</label><input type="url" id="instagram_link" placeholder="https://instagram.com/..."></div>
+          <div class="form-group"><label>WhatsApp</label><input type="url" id="whatsapp_link" placeholder="https://wa.me/..."></div>
+          <div class="form-group"><label>YouTube</label><input type="url" id="youtube_link" placeholder="https://youtube.com/..."></div>
+          <div class="form-group"><label>Twitter</label><input type="url" id="twitter_link" placeholder="https://twitter.com/..."></div>
+          <div class="form-group"><label>URL gestion externe</label><input type="url" id="external_management_url" placeholder="URL système externe..."></div>
+        </div>
+      </div>
+
+      <button onclick="saveAllSettings()" class="btn btn-primary" style="font-size:1.1rem;padding:1rem 3rem;width:100%;">💾 Enregistrer tous les paramètres</button>
+    </main>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('admin_token');
+
+    function authHeaders(hasFile = false) {
+      const h = { Authorization: `Bearer ${token}` };
+      if (!hasFile) h['Content-Type'] = 'application/json';
+      return h;
+    }
+
+    async function checkAuth() {
+      if (!token) { window.location.href = '/admin/login.html'; return false; }
+      try {
+        const res = await fetch(`${API}/auth/me`, { headers: authHeaders() });
+        if (!(await res.json()).success) throw new Error();
+        return true;
+      } catch { localStorage.removeItem('admin_token'); window.location.href = '/admin/login.html'; return false; }
+    }
+
+    function logout() {
+      fetch(`${API}/auth/logout`, { method: 'POST' }).catch(() => {});
+      localStorage.removeItem('admin_token');
+      window.location.href = '/admin/login.html';
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function previewFile(input, previewId) {
+      if (input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => document.getElementById(previewId).src = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    async function uploadFile(inputId, folder) {
+      const input = document.getElementById(inputId);
+      if (!input.files[0]) return toast('❌ Aucun fichier sélectionné');
+      const fd = new FormData();
+      fd.append('folder', folder);
+      fd.append('image', input.files[0]);
+
+      try {
+        const res = await fetch(`${API}/settings/upload/${folder}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('✅ Image uploadée !');
+          // Déterminer la clé setting correspondante
+          const keyMap = { logo: 'logo_path', banner: 'banner_path', team: 'director_photo' };
+          const key = keyMap[folder] || 'logo_path';
+          await fetch(`${API}/settings/${key}`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ value: data.path })
+          });
+          // Recharger pour rafraîchir la preview
+          loadSettings();
+        } else {
+          toast('❌ ' + (data.error || 'Erreur upload'));
+        }
+      } catch (e) {
+        // Fallback : upload via route settings standard
+        toast('ℹ️ Upload via formulaire uniquement');
+      }
+    }
+
+    async function loadSettings() {
+      if (!(await checkAuth())) return;
+      try {
+        const res = await fetch(`${API}/settings`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          const s = {};
+          data.data.forEach(r => { s[r.key] = r.value; });
+
+          // Remplir les champs
+          const fields = ['school_name','school_slogan','site_title','meta_description',
+            'director_name','director_title','director_message',
+            'about_history','about_mission','about_vision','about_values',
+            'phone_primary','phone_secondary','email_contact','email_admin',
+            'address','opening_hours','facebook_link','instagram_link','whatsapp_link',
+            'youtube_link','twitter_link','external_management_url',
+            'stat_years','stat_students','stat_success','stat_teachers'];
+
+          fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) el.value = s[f] || '';
+          });
+
+          // Couleurs
+          document.getElementById('primary_color').value = s.primary_color || '#1a56db';
+          document.getElementById('primary_color_text').value = s.primary_color || '#1a56db';
+          document.getElementById('secondary_color').value = s.secondary_color || '#047857';
+          document.getElementById('secondary_color_text').value = s.secondary_color || '#047857';
+
+          // Sync color pickers
+          document.getElementById('primary_color').oninput = function() {
+            document.getElementById('primary_color_text').value = this.value;
+          };
+          document.getElementById('primary_color_text').oninput = function() {
+            document.getElementById('primary_color').value = this.value;
+          };
+          document.getElementById('secondary_color').oninput = function() {
+            document.getElementById('secondary_color_text').value = this.value;
+          };
+          document.getElementById('secondary_color_text').oninput = function() {
+            document.getElementById('secondary_color').value = this.value;
+          };
+
+          // Previews
+          if (s.logo_path) document.getElementById('logoPreview').src = s.logo_path;
+          if (s.banner_path) document.getElementById('bannerPreview').src = s.banner_path;
+          if (s.director_photo) document.getElementById('directorPhotoPreview').src = s.director_photo;
+
+          document.getElementById('sidebarSchoolName').textContent = s.school_name || 'Admin';
+          buildSidebar();
+          renderInfraEditor(s);
+          renderVideosEditor(s);
+        }
+      } catch(err) {
+        console.error('Erreur settings:', err);
+      }
+    }
+
+    function buildSidebar() {
+      const pages = [
+        { href:'/admin/dashboard.html', icon:'📊', label:'Dashboard', active:false },
+        { href:'/admin/settings.html', icon:'⚙️', label:'Paramètres', active:true },
+        { href:'/admin/content.html', icon:'📄', label:'Pages', active:false },
+        { href:'/admin/news-manager.html', icon:'📝', label:'Actualités', active:false },
+        { href:'/admin/gallery-manager.html', icon:'🖼️', label:'Galerie', active:false },
+        { href:'/admin/contacts.html', icon:'✉️', label:'Messages', active:false },
+        { href:'/admin/system.html', icon:'🔧', label:'Système', active:false }
+      ];
+      document.getElementById('sidebarNav').innerHTML = pages.map(p => `
+        <a href="${p.href}" style="display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;color:${p.active?'var(--white)':'#9ca3af'};text-decoration:none;border-radius:8px;background:${p.active?'var(--primary)':'transparent'};margin-bottom:0.25rem;">
+          ${p.icon} ${p.label}
+        </a>
+      `).join('');
+    }
+
+    async function saveAllSettings() {
+      const btn = document.querySelector('button[onclick="saveAllSettings()"]');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement en cours...';
+
+      const allFields = document.querySelectorAll('input[id]:not([type=file]):not([type=color]), textarea[id]');
+      const settings = [];
+      const seen = new Set();
+
+      allFields.forEach(el => {
+        if (seen.has(el.id)) return;
+        seen.add(el.id);
+        settings.push({ key: el.id, value: el.value });
+      });
+
+      // Ajouter les couleurs depuis les text inputs
+      const pc = document.getElementById('primary_color_text').value;
+      const sc = document.getElementById('secondary_color_text').value;
+      settings.push({ key: 'primary_color', value: pc });
+      settings.push({ key: 'secondary_color', value: sc });
+
+      try {
+        const res = await fetch(`${API}/settings`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ settings })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('✅ Tous les paramètres ont été enregistrés !');
+        } else {
+          toast('❌ ' + (data.error || 'Erreur'));
+        }
+      } catch (err) {
+        toast('❌ Erreur de connexion');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Enregistrer tous les paramètres';
+      }
+    }
+
+    function renderInfraEditor(s) {
+      const container = document.getElementById('infraEditor');
+      let html = '';
+      for (let i = 1; i <= 6; i++) {
+        const name = s[`infra_${i}_name`] || '';
+        html += `<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:0.75rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+            <strong style="font-size:0.9rem;">Infrastructure ${i} ${name ? '— ' + name : ''}</strong>
+            <button onclick="deleteInfra(${i})" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.25rem 0.75rem;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑️ Supprimer</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:0.5rem;margin-top:0.5rem;">
+            <div>
+              <div style="display:flex;gap:0.5rem;">
+                <input type="text" id="infra_${i}_icon" placeholder="🏫" style="width:50px;font-size:1.2rem;text-align:center;">
+                <input type="text" id="infra_${i}_name" placeholder="Nom" style="flex:1;">
+              </div>
+              <input type="text" id="infra_${i}_desc" placeholder="Description" style="width:100%;margin-top:0.25rem;">
+            </div>
+            <div>
+              <input type="text" id="infra_${i}_photo" placeholder="Photo URL" style="width:100%;font-size:0.8rem;">
+              <input type="file" id="infra_${i}_file" accept="image/*" onchange="uploadInfraPhoto(${i})" style="width:100%;margin-top:0.25rem;font-size:0.75rem;">
+            </div>
+          </div>
+        </div>`;
+      }
+      container.innerHTML = html;
+
+      // Remplir valeurs existantes
+      for (let i = 1; i <= 6; i++) {
+        const iconEl = document.getElementById(`infra_${i}_icon`);
+        const nameEl = document.getElementById(`infra_${i}_name`);
+        const descEl = document.getElementById(`infra_${i}_desc`);
+        const photoEl = document.getElementById(`infra_${i}_photo`);
+        if (iconEl) iconEl.value = s[`infra_${i}_icon`] || '';
+        if (nameEl) nameEl.value = s[`infra_${i}_name`] || '';
+        if (descEl) descEl.value = s[`infra_${i}_desc`] || '';
+        if (photoEl) photoEl.value = s[`infra_${i}_photo`] || '';
+      }
+    }
+
+    async function deleteInfra(index) {
+      if (!confirm(`Supprimer l'infrastructure ${index} ?`)) return;
+      try {
+        await fetch(`${API}/settings`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ settings: [
+            { key: `infra_${index}_name`, value: '' },
+            { key: `infra_${index}_desc`, value: '' },
+            { key: `infra_${index}_icon`, value: '' },
+            { key: `infra_${index}_photo`, value: '' }
+          ]})
+        });
+        toast('🗑️ Infrastructure supprimée. Cliquez Enregistrer pour confirmer.');
+        loadSettings();
+      } catch(e) { toast('❌ Erreur'); }
+    }
+
+    window.deleteInfra = deleteInfra;
+
+    async function uploadInfraPhoto(index) {
+      const fileInput = document.getElementById(`infra_${index}_file`);
+      if (!fileInput || !fileInput.files.length) return;
+      const fd = new FormData();
+      fd.append('image', fileInput.files[0]);
+      try {
+        const res = await fetch(`${API}/settings/upload/logo`, { method: 'POST', headers: { Authorization: authHeaders().Authorization }, body: fd });
+        const data = await res.json();
+        if (data.success && data.path) {
+          document.getElementById(`infra_${index}_photo`).value = data.path;
+          toast(`✅ Photo infrastructure ${index} uploadée`);
+        }
+      } catch(e) { toast('❌ Erreur upload'); }
+      fileInput.value = '';
+    }
+
+    window.uploadInfraPhoto = uploadInfraPhoto;
+
+    // --- Videos Editor ---
+    function renderVideosEditor(s) {
+      const container = document.getElementById('videosEditor');
+      const count = parseInt(s.video_count) || 2;
+      let html = '<input type="hidden" id="video_count" value="' + count + '">';
+      for (let i = 1; i <= count; i++) {
+        html += '<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:0.75rem;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">' +
+          '<strong style="font-size:0.9rem;">Vidéo ' + i + '</strong>' +
+          '<button onclick="removeVideo(' + i + ')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.25rem 0.75rem;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑️</button>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">' +
+          '<input type="text" id="video_' + i + '_icon" placeholder="🎬" style="text-align:center;font-size:1.2rem;">' +
+          '<input type="text" id="video_' + i + '_title" placeholder="Titre">' +
+          '<input type="text" id="video_' + i + '_desc" placeholder="Description" style="grid-column:1/-1;">' +
+          '<input type="url" id="video_' + i + '_url" placeholder="https://youtube.com/..." style="grid-column:1/-1;">' +
+          '</div></div>';
+      }
+      container.innerHTML = html;
+      for (let i = 1; i <= count; i++) {
+        var el = function(id){ return document.getElementById('video_'+i+'_'+id); };
+        var iconEl = el('icon'); if (iconEl) iconEl.value = s['video_'+i+'_icon'] || '';
+        var titleEl = el('title'); if (titleEl) titleEl.value = s['video_'+i+'_title'] || '';
+        var descEl = el('desc'); if (descEl) descEl.value = s['video_'+i+'_desc'] || '';
+        var urlEl = el('url'); if (urlEl) urlEl.value = s['video_'+i+'_url'] || '';
+      }
+    }
+
+    function addVideo() {
+      var countEl = document.getElementById('video_count');
+      var newCount = (parseInt(countEl && countEl.value) || 0) + 1;
+      var keys = [
+        { key: 'video_count', value: String(newCount) },
+        { key: 'video_' + newCount + '_icon', value: '' },
+        { key: 'video_' + newCount + '_title', value: '' },
+        { key: 'video_' + newCount + '_desc', value: '' },
+        { key: 'video_' + newCount + '_url', value: '' }
+      ];
+      fetch(API + '/settings', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ settings: keys }) })
+        .then(function(){ loadSettings(); });
+    }
+
+    async function removeVideo(index) {
+      if (!confirm('Supprimer la vidéo ' + index + ' ?')) return;
+      var countEl = document.getElementById('video_count');
+      var count = parseInt(countEl && countEl.value) || 0;
+      var settings = [{ key: 'video_count', value: String(count - 1) }];
+      for (var i = index; i < count; i++) {
+        settings.push({ key: 'video_' + i + '_icon', value: '' });
+        settings.push({ key: 'video_' + i + '_title', value: '' });
+        settings.push({ key: 'video_' + i + '_desc', value: '' });
+        settings.push({ key: 'video_' + i + '_url', value: '' });
+      }
+      await fetch(API + '/settings', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ settings: settings }) });
+      loadSettings();
+    }
+
+    window.addVideo = addVideo;
+    window.removeVideo = removeVideo;
+
+    window.logout = logout;
+    window.uploadFile = uploadFile;
+    window.saveAllSettings = saveAllSettings;
+    window.previewFile = previewFile;
+
+    document.addEventListener('DOMContentLoaded', loadSettings);
+  </script>
+</body>
+</html>

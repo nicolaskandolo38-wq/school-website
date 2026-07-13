@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Découvrez l'histoire, la mission et l'équipe de notre établissement">
+  <title>À propos — Mon École</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+  <header class="site-header" data-current-page="about"></header>
+
+  <main id="main-content">
+
+    <!-- Fil d'Ariane -->
+    <div class="breadcrumb">
+      <div class="breadcrumb-inner">
+        <a href="/">Accueil</a> › À propos
+      </div>
+    </div>
+
+    <!-- ===== HISTOIRE ===== -->
+    <section class="section" id="historySection">
+      <div class="container" style="max-width:800px;">
+        <h2 style="font-size:2rem;font-weight:700;margin-bottom:1.5rem;text-align:center;">Notre Histoire</h2>
+        <div id="historyContent" style="font-size:1.05rem;line-height:1.8;color:var(--text);">
+          <div class="loading">Chargement...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MISSION, VISION, VALEURS ===== -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="grid-3">
+          <div class="card" style="text-align:center;padding:2.5rem 2rem;">
+            <span style="font-size:2.5rem;">🎯</span>
+            <h3 style="margin:1rem 0 0.5rem;">Notre Mission</h3>
+            <p id="missionContent" style="font-size:0.95rem;color:var(--text-light);line-height:1.7;">
+              <span class="loading">...</span>
+            </p>
+          </div>
+          <div class="card" style="text-align:center;padding:2.5rem 2rem;">
+            <span style="font-size:2.5rem;">👁️</span>
+            <h3 style="margin:1rem 0 0.5rem;">Notre Vision</h3>
+            <p id="visionContent" style="font-size:0.95rem;color:var(--text-light);line-height:1.7;">
+              <span class="loading">...</span>
+            </p>
+          </div>
+          <div class="card" style="text-align:center;padding:2.5rem 2rem;">
+            <span style="font-size:2.5rem;">💎</span>
+            <h3 style="margin:1rem 0 0.5rem;">Nos Valeurs</h3>
+            <p id="valuesContent" style="font-size:0.95rem;color:var(--text-light);line-height:1.7;">
+              <span class="loading">...</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MOT DU DIRECTEUR ===== -->
+    <section class="section" id="directorSection">
+      <div class="container" style="max-width:900px;">
+        <div style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
+          <div style="flex-shrink:0;">
+            <img id="directorPhoto" src="" alt="Directeur" style="width:180px;height:180px;border-radius:50%;object-fit:cover;background:var(--border);display:none;">
+            <div id="directorPhotoPlaceholder" style="width:180px;height:180px;border-radius:50%;background:linear-gradient(135deg,#1a56db,#047857);display:flex;align-items:center;justify-content:center;font-size:4rem;">👤</div>
+          </div>
+          <div style="flex:1;min-width:280px;">
+            <h3 style="font-size:0.9rem;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;">Mot du directeur</h3>
+            <h2 id="directorName" style="font-size:1.75rem;font-weight:700;margin-bottom:0.25rem;">Dr. Jean Dupont</h2>
+            <p id="directorTitle" style="color:var(--text-light);margin-bottom:1.5rem;">Directeur Général</p>
+            <blockquote id="directorMessage" style="font-size:1.05rem;line-height:1.8;color:var(--text);font-style:italic;border-left:4px solid var(--primary);padding-left:1.5rem;margin:0;">
+              <span class="loading">Chargement...</span>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ÉQUIPE PÉDAGOGIQUE ===== -->
+    <section class="section section-alt" id="teamSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>Notre Équipe Pédagogique</h2>
+          <p>Des professionnels passionnés au service de l'éducation</p>
+        </div>
+        <div class="team-grid" id="teamGrid">
+          <div class="loading" style="grid-column:1/-1;">Chargement de l'équipe...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== INFRASTRUCTURES ===== -->
+    <section class="section" id="infraSection">
+      <div class="container">
+        <div class="section-header">
+          <h2>Nos Infrastructures</h2>
+          <p>Un cadre moderne et adapté pour l'apprentissage</p>
+        </div>
+        <div class="grid-3" id="infraGrid">
+          <div class="loading">Chargement...</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"></footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    function getImageUrl(path) {
+      if (!path) return '';
+      return path.startsWith('/') ? path : '/' + path;
+    }
+
+    async function loadAboutPage() {
+      try {
+        const [settingsRes, teamRes] = await Promise.all([
+          fetch('/api/settings/public'),
+          fetch('/api/team/public')
+        ]);
+
+        const settings = (await settingsRes.json()).data;
+        const teamData = await teamRes.json();
+
+        // Titre
+        document.title = `À propos — ${settings.school_name || 'Mon École'}`;
+
+        // Histoire
+        document.getElementById('historyContent').textContent =
+          settings.about_history || 'Notre histoire sera bientôt disponible.';
+
+        // Mission / Vision / Valeurs
+        document.getElementById('missionContent').textContent =
+          settings.about_mission || 'Notre mission sera bientôt disponible.';
+        document.getElementById('visionContent').textContent =
+          settings.about_vision || 'Notre vision sera bientôt disponible.';
+        document.getElementById('valuesContent').textContent =
+          settings.about_values || 'Nos valeurs seront bientôt disponibles.';
+
+        // Directeur
+        document.getElementById('directorName').textContent = settings.director_name || 'Directeur';
+        document.getElementById('directorTitle').textContent = settings.director_title || '';
+        document.getElementById('directorMessage').textContent =
+          settings.director_message || 'Message du directeur à venir.';
+
+        const photo = settings.director_photo;
+        const photoEl = document.getElementById('directorPhoto');
+        const placeholder = document.getElementById('directorPhotoPlaceholder');
+        if (photo) {
+          photoEl.src = getImageUrl(photo);
+          photoEl.style.display = 'block';
+          placeholder.style.display = 'none';
+        }
+
+        // Infrastructures
+        console.log('DEBUG infra — settings keys:', Object.keys(settings).filter(k => k.startsWith('infra_')).length);
+        const infraGrid = document.getElementById('infraGrid');
+        let infraHtml = '';
+        for (let i = 1; i <= 6; i++) {
+          const name = settings['infra_' + i + '_name'];
+          if (!name) continue;
+          const desc = settings['infra_' + i + '_desc'] || '';
+          const icon = settings['infra_' + i + '_icon'] || '🏫';
+          const photo = settings['infra_' + i + '_photo'] || '';
+          infraHtml += '<div class="card" style="text-align:center;padding:1.5rem;">' +
+            (photo ? '<div style="width:100%;aspect-ratio:4/3;border-radius:8px;margin-bottom:0.75rem;background:#f3f4f6;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="' + getImageUrl(photo) + '" alt="' + name + '" style="max-width:100%;max-height:100%;object-fit:contain;" loading="lazy"></div>' : '') +
+            '<span style="font-size:3rem;">' + icon + '</span>' +
+            '<h4 style="margin:1rem 0 0.5rem;">' + name + '</h4>' +
+            '<p style="font-size:0.9rem;color:var(--text-light);">' + desc + '</p>' +
+            '</div>';
+        }
+        infraGrid.innerHTML = infraHtml || '<div class="empty-state" style="grid-column:1/-1;">Aucune infrastructure renseignée.</div>';
+
+        // Équipe
+        const teamGrid = document.getElementById('teamGrid');
+        if (teamData.success && teamData.data.length > 0) {
+          teamGrid.innerHTML = teamData.data.map(m => `
+            <div class="card team-card">
+              ${m.photo_path
+                ? `<img src="${getImageUrl(m.photo_path)}" alt="${m.name}" loading="lazy">`
+                : `<div style="width:120px;height:120px;border-radius:50%;background:var(--border);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:3rem;">👤</div>`
+              }
+              <h4>${m.name}</h4>
+              <div class="role">${m.role}</div>
+              ${m.bio ? `<p style="font-size:0.85rem;color:var(--text-light);margin-top:0.5rem;">${m.bio}</p>` : ''}
+            </div>
+          `).join('');
+        } else {
+          teamGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Aucun membre d\'équipe pour le moment.</div>';
+        }
+
+      } catch (err) {
+        console.error('Erreur chargement page à propos:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAboutPage);
+  </script>
+</body>
+</html>
