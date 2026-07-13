@@ -107,8 +107,12 @@ function adminGateMiddleware(req, res, next) {
     // Sauvegarder la session AVANT de rediriger
     req.session.save(function(err) {
       if (err) return res.status(500).send('Erreur session');
-      var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '');
-      return res.redirect(cleanUrl || '/' + ADMIN_PATH + '/login.html');
+      var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '').replace(/\/+$/, '');
+      // Si l'URL est juste /chemin-admin (sans page), rediriger vers login.html
+      if (cleanUrl === '/' + ADMIN_PATH || cleanUrl === '') {
+        return res.redirect('/' + ADMIN_PATH + '/login.html');
+      }
+      return res.redirect(cleanUrl);
     });
     return;
   }
@@ -127,6 +131,13 @@ if (ADMIN_PATH !== 'admin') {
 // Servir l'admin uniquement sur le chemin obfusqué avec double verrou
 app.use('/' + ADMIN_PATH,
   adminGateMiddleware,
+  function(req, res, next) {
+    // Si on arrive sur /chemin-admin sans fichier, rediriger vers login.html
+    if (req.path === '/' || req.path === '') {
+      return res.redirect('/' + ADMIN_PATH + '/login.html');
+    }
+    next();
+  },
   express.static(path.join(__dirname, '..', 'admin'), {
     maxAge: 0,
     setHeaders: function(res) {
