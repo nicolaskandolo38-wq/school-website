@@ -1,47 +1,56 @@
-app = "school-website"
+# fly.toml app configuration file generated for school-website on 2026-07-13T20:51:31+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'school-website'
+primary_region = 'lhr'
 
 [build]
-  builder = "heroku/buildpacks:20"
+  dockerfile = "Dockerfile"
 
 [env]
-  NODE_ENV = "production"
-  PORT = "8080"
-  SESSION_SECRET = "s3ssion-s3cur3-k3y-2024!"
-  JWT_SECRET = "jWT-s3cur3-k3y-2024!"
-  ADMIN_PATH = "gestion-esgi-2024"
-  ADMIN_GATE_PASSWORD = "P0rteBlindee2024!"
-  ADMIN_USERNAME = "admin"
-  ADMIN_PASSWORD = "Admin@2024Secure!"
-  ADMIN_REDIRECT = "/"
-  DATABASE_PATH = "/data/school.db"
-  UPLOAD_DIR = "/data/uploads"
+  ADMIN_GATE_PASSWORD = 'P0rteBlindee2024!'
+  ADMIN_PASSWORD = 'Admin@2024Secure!'
+  ADMIN_PATH = 'gestion-esgi-2024'
+  ADMIN_REDIRECT = '/'
+  ADMIN_USERNAME = 'admin'
+  DATABASE_PATH = '/data/school.db'
+  JWT_SECRET = 'jWT-s3cur3-k3y-2024!'
+  NODE_ENV = 'production'
+  PORT = '8080'
+  SESSION_SECRET = 's3ssion-s3cur3-k3y-2024!'
+  UPLOAD_DIR = '/data/uploads'
+
+[[mounts]]
+  source = 'school_data'
+  destination = '/data'
+  initial_size = '1gb'
 
 [[services]]
-  http_checks = []
+  protocol = 'tcp'
   internal_port = 8080
-  processes = ["app"]
-  protocol = "tcp"
+  processes = ['app']
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
 
   [services.concurrency]
+    type = 'connections'
     hard_limit = 25
     soft_limit = 20
-    type = "connections"
-
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
 
   [[services.tcp_checks]]
-    grace_period = "1s"
-    interval = "15s"
-    restart_limit = 0
-    timeout = "2s"
+    interval = '15s'
+    timeout = '2s'
+    grace_period = '1s'
 
-[mounts]
-  source = "school_data"
-  destination = "/data"
-  initial_size = "1gb"
+[[vm]]
+  memory = '1gb'
+  cpus = 1
+  memory_mb = 1024
