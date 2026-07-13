@@ -104,9 +104,13 @@ function adminGateMiddleware(req, res, next) {
   var gateParam = req.query.gate;
   if (gateParam && gateParam === ADMIN_GATE_PASSWORD) {
     req.session.adminGatePassed = true;
-    // Rediriger vers la même URL sans le paramètre
-    var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '');
-    return res.redirect(cleanUrl || '/' + ADMIN_PATH + '/login.html');
+    // Sauvegarder la session AVANT de rediriger
+    req.session.save(function(err) {
+      if (err) return res.status(500).send('Erreur session');
+      var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '');
+      return res.redirect(cleanUrl || '/' + ADMIN_PATH + '/login.html');
+    });
+    return;
   }
 
   // Afficher le formulaire de gate password
