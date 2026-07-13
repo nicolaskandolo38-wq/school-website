@@ -97,24 +97,25 @@ function adminGateMiddleware(req, res, next) {
   // Si ADMIN_PATH = 'admin' (dev local), pas de gate
   if (ADMIN_PATH === 'admin') return next();
 
-  // Déjà vérifié dans la session
-  if (req.session && req.session.adminGatePassed) return next();
+  // Déjà vérifié via cookie (plus fiable que MemoryStore session)
+  if (req.cookies && req.cookies.adminGate === ADMIN_GATE_PASSWORD) return next();
 
   // Vérifier le paramètre ?gate=...
   var gateParam = req.query.gate;
   if (gateParam && gateParam === ADMIN_GATE_PASSWORD) {
-    req.session.adminGatePassed = true;
-    // Sauvegarder la session AVANT de rediriger
-    req.session.save(function(err) {
-      if (err) return res.status(500).send('Erreur session');
-      var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '').replace(/\/+$/, '');
-      // Si l'URL est juste /chemin-admin (sans page), rediriger vers login.html
-      if (cleanUrl === '/' + ADMIN_PATH || cleanUrl === '') {
-        return res.redirect('/' + ADMIN_PATH + '/login.html');
-      }
-      return res.redirect(cleanUrl);
+    // Utiliser un cookie (fiable même sans stockage persistant)
+    res.cookie('adminGate', ADMIN_GATE_PASSWORD, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 12 * 60 * 60 * 1000, // 12h
+      path: '/' + ADMIN_PATH
     });
-    return;
+    var cleanUrl = req.originalUrl.replace(/[?&]gate=[^&]*/, '').replace(/\?$/, '').replace(/\/+$/, '');
+    if (cleanUrl === '/' + ADMIN_PATH || cleanUrl === '') {
+      return res.redirect('/' + ADMIN_PATH + '/login.html');
+    }
+    return res.redirect(cleanUrl);
   }
 
   // Afficher le formulaire de gate password
