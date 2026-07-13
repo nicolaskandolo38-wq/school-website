@@ -9,7 +9,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 // Configuration des dossiers de destination
-const uploadBase = path.join(__dirname, '..', '..', 'public', 'uploads');
+const uploadBase = process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'public', 'uploads');
 
 // Assurer l'existence des dossiers
 const folders = ['logo', 'banner', 'gallery', 'news', 'team', 'testimonials'];

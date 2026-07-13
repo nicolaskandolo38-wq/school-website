@@ -156,8 +156,9 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '7d' : 0
 }));
 
-// Uploads
-app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'), {
+// Uploads (supporte UPLOAD_DIR custom pour Fly.io)
+var uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'public', 'uploads');
+app.use('/uploads', express.static(uploadDir, {
   maxAge: '30d'
 }));
 

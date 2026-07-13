@@ -1,0 +1,47 @@
+app = "school-website"
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  SESSION_SECRET = "s3ssion-s3cur3-k3y-2024!"
+  JWT_SECRET = "jWT-s3cur3-k3y-2024!"
+  ADMIN_PATH = "gestion-esgi-2024"
+  ADMIN_GATE_PASSWORD = "P0rteBlindee2024!"
+  ADMIN_USERNAME = "admin"
+  ADMIN_PASSWORD = "Admin@2024Secure!"
+  ADMIN_REDIRECT = "/"
+  DATABASE_PATH = "/data/school.db"
+  UPLOAD_DIR = "/data/uploads"
+
+[[services]]
+  http_checks = []
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"
+
+[mounts]
+  source = "school_data"
+  destination = "/data"
+  initial_size = "1gb"
