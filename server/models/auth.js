@@ -13,6 +13,13 @@ const AuthModel = {
     const db = getDb();
     const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username);
     if (!admin) return null;
+    
+    // Mode sans mot de passe (ADMIN_NO_PASSWORD=true ou pas de hash bcrypt)
+    if (process.env.ADMIN_NO_PASSWORD === 'true' || !admin.password_hash || admin.password_hash.length < 10) {
+      const { password_hash, ...safeAdmin } = admin;
+      return safeAdmin;
+    }
+    
     const match = bcrypt.compareSync(password, admin.password_hash);
     if (!match) return null;
     const { password_hash, ...safeAdmin } = admin;

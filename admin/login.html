@@ -40,12 +40,12 @@
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="form-group">
         <label>Nom d'utilisateur</label>
-        <input type="text" id="username" required placeholder="admin" autocomplete="username" autofocus>
+        <input type="text" id="username" placeholder="admin" value="admin" autocomplete="username" autofocus>
       </div>
 
       <div class="form-group">
         <label>Mot de passe</label>
-        <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
       </div>
 
       <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;" id="loginBtn">
@@ -73,8 +73,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value
+            username: document.getElementById('username').value || 'admin',
+            password: document.getElementById('password').value || ''
           })
         });
         const data = await res.json();
